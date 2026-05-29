@@ -1,0 +1,38 @@
+interface Props {
+  income: number;
+  expense: number;
+}
+
+export default function SpendingBar({ income, expense }: Props) {
+  const pct =
+    income > 0 ? Math.min(100, Math.round((expense / income) * 100)) : 0;
+  const color =
+    pct > 90 ? "bg-rose-500" : pct > 70 ? "bg-amber-400" : "bg-emerald-500";
+
+  const message =
+    pct > 90
+      ? "Danger! You've used over 90% of your income."
+      : pct > 70
+        ? `Caution — you've spent ${pct}% of your income.`
+        : pct > 0
+          ? `You've used ${pct}% of your income. Looking good!`
+          : "No transactions yet this month.";
+
+  return (
+    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-sm font-semibold text-gray-700">
+          Spending vs Income
+        </p>
+        <span className="text-sm font-bold text-gray-900">{pct}%</span>
+      </div>
+      <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-500 ${color}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <p className="text-xs text-gray-400 mt-2">{message}</p>
+    </div>
+  );
+}
