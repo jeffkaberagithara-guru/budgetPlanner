@@ -26,24 +26,24 @@ export default function MonthNav() {
     monthKey(new Date().getFullYear(), new Date().getMonth());
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-1 bg-white border border-gray-100 rounded-xl px-1 py-1 shadow-sm">
       <button
         onClick={() => change(-1)}
         aria-label="Previous month"
         className="p-1.5 rounded-lg hover:bg-gray-100 transition"
       >
-        <ChevronLeft size={18} className="text-gray-500" />
+        <ChevronLeft size={16} className="text-gray-500" />
       </button>
-      <span className="text-sm font-semibold text-gray-700 min-w-32 text-center">
-        {format(date, "MMMM yyyy")}
+      <span className="text-xs md:text-sm font-bold text-gray-700 min-w-24 md:min-w-32 text-center px-1">
+        {format(date, "MMM yyyy")}
       </span>
       <button
         onClick={() => change(1)}
         disabled={isCurrentMonth}
         aria-label="Next month"
-        className="p-1.5 rounded-lg hover:bg-gray-100 transition disabled:opacity-30"
+        className="p-1.5 rounded-lg hover:bg-gray-100 transition disabled:opacity-30 disabled:cursor-not-allowed"
       >
-        <ChevronRight size={18} className="text-gray-500" />
+        <ChevronRight size={16} className="text-gray-500" />
       </button>
     </div>
   );
