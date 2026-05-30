@@ -16,7 +16,23 @@ const CAT_COLORS: Record<string, string> = {
   Shopping: "bg-indigo-100 text-indigo-700",
   Utilities: "bg-blue-100 text-blue-700",
   Education: "bg-lime-100 text-lime-700",
-  Other: "bg-gray-100 text-gray-700",
+  Other: "bg-gray-100 text-gray-600",
+};
+
+const CAT_DOT: Record<string, string> = {
+  Salary: "bg-emerald-500",
+  Freelance: "bg-teal-500",
+  Investment: "bg-cyan-500",
+  "Other Income": "bg-green-500",
+  Housing: "bg-rose-500",
+  Food: "bg-orange-500",
+  Transport: "bg-amber-500",
+  Health: "bg-pink-500",
+  Entertainment: "bg-purple-500",
+  Shopping: "bg-indigo-500",
+  Utilities: "bg-blue-500",
+  Education: "bg-lime-500",
+  Other: "bg-gray-400",
 };
 
 function TxRow({ tx }: { tx: Transaction }) {
@@ -29,16 +45,21 @@ function TxRow({ tx }: { tx: Transaction }) {
 
   return (
     <div className="flex items-center gap-3 py-3 border-b border-gray-50 last:border-0 group">
+      <div
+        className={`w-2.5 h-2.5 rounded-full shrink-0 ${CAT_DOT[tx.category] ?? "bg-gray-400"}`}
+      />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-800 truncate">{tx.name}</p>
+        <p className="text-sm font-semibold text-gray-800 truncate">
+          {tx.name}
+        </p>
         <span
-          className={`text-xs px-2 py-0.5 rounded-full font-medium ${CAT_COLORS[tx.category] ?? "bg-gray-100 text-gray-700"}`}
+          className={`text-xs px-2 py-0.5 rounded-full font-medium ${CAT_COLORS[tx.category] ?? "bg-gray-100 text-gray-600"}`}
         >
           {tx.category}
         </span>
       </div>
       <p
-        className={`text-sm font-bold shrink-0 ${tx.type === "income" ? "text-emerald-600" : "text-rose-500"}`}
+        className={`text-sm font-black shrink-0 ${tx.type === "income" ? "text-emerald-600" : "text-rose-500"}`}
       >
         {tx.type === "income" ? "+" : "-"}
         {formatKES(tx.amount)}
@@ -46,9 +67,9 @@ function TxRow({ tx }: { tx: Transaction }) {
       <button
         onClick={handleDelete}
         aria-label="Delete transaction"
-        className="p-1.5 rounded-lg text-gray-300 hover:text-rose-500 hover:bg-rose-50 transition opacity-0 group-hover:opacity-100"
+        className="p-1.5 rounded-lg text-gray-300 hover:text-rose-500 hover:bg-rose-50 transition lg:opacity-0 lg:group-hover:opacity-100"
       >
-        <Trash2 size={15} />
+        <Trash2 size={14} />
       </button>
     </div>
   );
@@ -61,14 +82,22 @@ export default function TransactionList() {
 
   if (sorted.length === 0) {
     return (
-      <div className="text-center py-10 text-gray-400 text-sm">
-        No transactions yet. Add your first one above!
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center mb-3">
+          <span className="text-2xl">💸</span>
+        </div>
+        <p className="text-sm font-semibold text-gray-400">
+          No transactions yet
+        </p>
+        <p className="text-xs text-gray-300 mt-1">
+          Add your first income or expense above
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="divide-y divide-gray-50">
+    <div>
       {sorted.map((tx) => (
         <TxRow key={tx.id} tx={tx} />
       ))}
