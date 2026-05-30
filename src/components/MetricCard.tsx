@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { LucideIcon } from "lucide-react";
 
 interface Props {
@@ -29,8 +30,27 @@ export default function MetricCard({
   color,
   sub,
 }: Props) {
+  const [visible, setVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setVisible(true);
+      },
+      { threshold: 0.1 },
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-start gap-4">
+    <div
+      ref={ref}
+      className={`bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-start gap-4 transition-all duration-500 ${
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+      }`}
+    >
       <div className={`p-3 rounded-xl ${colorMap[color]}`}>
         <Icon size={22} />
       </div>
