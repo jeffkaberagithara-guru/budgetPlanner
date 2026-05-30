@@ -1,4 +1,10 @@
-import { createContext, useContext, useReducer, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useReducer,
+  ReactNode,
+  useEffect,
+} from "react";
 import { BudgetState, BudgetAction, MonthData } from "../types";
 
 const now = new Date();
@@ -8,6 +14,19 @@ const initialState: BudgetState = {
   currentYear: now.getFullYear(),
   currentMonth: now.getMonth(),
 };
+
+const STORAGE_KEY = "budgetbold-data";
+
+function loadState(): BudgetState {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return initialState;
+    const parsed = JSON.parse(raw);
+    return { ...initialState, ...parsed };
+  } catch {
+    return initialState;
+  }
+}
 
 function budgetReducer(state: BudgetState, action: BudgetAction): BudgetState {
   switch (action.type) {
@@ -50,7 +69,10 @@ function budgetReducer(state: BudgetState, action: BudgetAction): BudgetState {
       const existing = state.data[key] ?? { transactions: [], savingsGoal: 0 };
       return {
         ...state,
-        data: { ...state.data, [key]: { ...existing, savingsGoal: goal } },
+        data: {
+          ...state.data,
+          [key]: { ...existing, savingsGoal: goal },
+        },
       };
     }
     default:
@@ -75,7 +97,17 @@ interface BudgetContextType {
 const BudgetContext = createContext<BudgetContextType | null>(null);
 
 export function BudgetProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(budgetReducer, initialState);
+  const [state, dispatch] = useReducer(budgetReducer, undefined, loadState);
+
+  // Persist to localStorage on every state change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch {
+      console.warn("Failed to save to localStorage");
+    }
+  }, [state]);
+
   return (
     <BudgetContext.Provider value={{ state, dispatch }}>
       {children}
