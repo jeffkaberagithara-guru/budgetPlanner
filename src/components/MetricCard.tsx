@@ -47,19 +47,21 @@ export default function MetricCard({
   return (
     <div
       ref={ref}
-      className={`bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-start gap-4 transition-all duration-500 ${
+      className={`bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100 flex flex-col md:flex-row items-start md:gap-4 gap-3 transition-all duration-500 ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       }`}
     >
-      <div className={`p-3 rounded-xl ${colorMap[color]}`}>
-        <Icon size={22} />
+      <div className={`p-2.5 md:p-3 rounded-xl ${colorMap[color]}`}>
+        <Icon size={18} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-gray-500 mb-1">{label}</p>
-        <p className={`text-2xl font-bold truncate ${valueColorMap[color]}`}>
+        <p className="text-xs text-gray-400 mb-1">{label}</p>
+        <p
+          className={`text-lg md:text-2xl font-black truncate ${valueColorMap[color]}`}
+        >
           {value}
         </p>
-        {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
+        {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
       </div>
     </div>
   );
