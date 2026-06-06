@@ -48,26 +48,29 @@ export default function Dashboard() {
     spendingPct > 90
       ? {
           msg: "You've used over 90% of your income — review your expenses!",
-          color: "bg-rose-50 border-rose-200 text-rose-700",
+          color:
+            "bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400",
         }
       : spendingPct > 70
         ? {
             msg: `You're at ${spendingPct}% spending. Keep an eye on it.`,
-            color: "bg-amber-50 border-amber-200 text-amber-700",
+            color:
+              "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400",
           }
         : balance > 0
           ? {
               msg: `Great job! You're saving ${formatKES(balance)} this month. 🎉`,
-              color: "bg-emerald-50 border-emerald-200 text-emerald-700",
+              color:
+                "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400",
             }
           : null;
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto w-full">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-xl md:text-2xl font-black text-gray-900">
+          <h1 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white">
             Dashboard
           </h1>
           <p className="text-sm text-gray-400 mt-0.5">
@@ -126,14 +129,14 @@ export default function Dashboard() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-          <h2 className="text-sm font-bold text-gray-900 mb-4">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 transition-colors">
+          <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-4">
             Spending by Category
           </h2>
           <CategoryChart />
         </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-          <h2 className="text-sm font-bold text-gray-900 mb-4">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 transition-colors">
+          <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-4">
             6-Month Comparison
           </h2>
           <MonthlyComparisonChart />
@@ -141,10 +144,10 @@ export default function Dashboard() {
       </div>
 
       {/* Transactions */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-5">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4 md:p-5 transition-colors">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-sm font-bold text-gray-900">
+            <h2 className="text-sm font-bold text-gray-900 dark:text-white">
               Recent Transactions
             </h2>
             <p className="text-xs text-gray-400">
@@ -154,13 +157,13 @@ export default function Dashboard() {
           <div className="flex gap-2">
             <button
               onClick={() => openModal("income")}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-600 text-xs font-bold hover:bg-emerald-100 transition"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold hover:bg-emerald-100 transition"
             >
               <Plus size={13} /> Income
             </button>
             <button
               onClick={() => openModal("expense")}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-rose-50 text-rose-500 text-xs font-bold hover:bg-rose-100 transition"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-500 dark:text-rose-400 text-xs font-bold hover:bg-rose-100 transition"
             >
               <Plus size={13} /> Expense
             </button>
