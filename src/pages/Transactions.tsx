@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { Download, Plus, Search } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useBudget, getMonthData, monthKey } from "../context/BudgetContext";
 import { useSearch } from "../context/SearchContext";
 import { exportToCSV } from "../utils/export";
 import AddTransactionModal from "../components/AddTransactionModal";
 import MonthNav from "../components/MonthNav";
+import RecurringManager from "../components/RecurringManager";
+import BudgetLimits from "../components/BudgetLimits";
 import { TransactionType, Transaction } from "../types";
 import { formatKES } from "../utils/format";
-import { Trash2 } from "lucide-react";
 
 const CAT_COLORS: Record<string, string> = {
   Salary:
@@ -54,9 +56,16 @@ function TxRow({ tx, onDelete }: { tx: Transaction; onDelete: () => void }) {
         className={`w-2.5 h-2.5 rounded-full shrink-0 ${CAT_DOT[tx.category] ?? "bg-gray-400"}`}
       />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
-          {tx.name}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
+            {tx.name}
+          </p>
+          {tx.recurring && (
+            <span className="text-xs px-1.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 font-medium shrink-0">
+              🔄 recurring
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-2 mt-0.5">
           <span
             className={`text-xs px-2 py-0.5 rounded-full font-medium ${CAT_COLORS[tx.category] ?? ""}`}
@@ -170,7 +179,7 @@ export default function Transactions() {
 
       {/* Actions row */}
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
-        {/* Search mobile */}
+        {/* Mobile search */}
         <div className="flex sm:hidden items-center gap-3 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2.5 flex-1">
           <Search size={15} className="text-gray-400 shrink-0" />
           <input
@@ -230,8 +239,8 @@ export default function Transactions() {
         </div>
       </div>
 
-      {/* List */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4 md:p-5 transition-colors">
+      {/* Transaction list */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-4 md:p-5 transition-colors mb-4">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="w-14 h-14 rounded-2xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center mb-3">
@@ -251,6 +260,12 @@ export default function Transactions() {
             <TxRow key={tx.id} tx={tx} onDelete={() => handleDelete(tx.id)} />
           ))
         )}
+      </div>
+
+      {/* Recurring + Budget Limits */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+        <RecurringManager />
+        <BudgetLimits />
       </div>
 
       <AddTransactionModal
