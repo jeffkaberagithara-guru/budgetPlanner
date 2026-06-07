@@ -14,9 +14,11 @@ export default function Reports() {
   const income = transactions
     .filter((t) => t.type === "income")
     .reduce((s, t) => s + t.amount, 0);
+
   const expense = transactions
     .filter((t) => t.type === "expense")
     .reduce((s, t) => s + t.amount, 0);
+
   const balance = income - expense;
   const saved = balance > 0 ? balance : 0;
 
@@ -131,9 +133,9 @@ export default function Reports() {
               savingsGoal,
               saved,
             }}
-            durationInFrames={120}
+            durationInFrames={150}
             compositionWidth={640}
-            compositionHeight={400}
+            compositionHeight={380}
             fps={30}
             style={{
               width: "100%",
@@ -142,6 +144,7 @@ export default function Reports() {
               overflow: "hidden",
             }}
             controls
+            loop
           />
         </div>
       </div>
