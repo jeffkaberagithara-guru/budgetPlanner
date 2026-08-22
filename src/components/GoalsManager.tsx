@@ -16,6 +16,7 @@ import Card from "./Card";
 import EmptyState from "./EmptyState";
 import { monthKey } from "../utils/budget";
 import { defaultTransactionDate } from "../utils/date";
+import { typeTotals } from "../utils/insights";
 import {
   crossedMilestone,
   goalSaved,
@@ -57,10 +58,7 @@ export default function GoalsManager() {
 
   const key = monthKey(state.currentYear, state.currentMonth);
   const monthlyIncome = useMemo(
-    () =>
-      (state.data[key]?.transactions ?? [])
-        .filter((t) => t.type === "income")
-        .reduce((s, t) => s + t.amount, 0),
+    () => typeTotals(state.data[key]?.transactions ?? []).income,
     [state.data, key],
   );
 
@@ -243,13 +241,21 @@ export default function GoalsManager() {
       </div>
 
       {formOpen && (
-        <div className="bg-gray-50 dark:bg-gray-800/60 rounded-card p-4 mb-5">
+        <form
+          noValidate
+          className="bg-gray-50 dark:bg-gray-800/60 rounded-card p-4 mb-5"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+        >
           <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
             {editingId ? "Edit Goal" : "New Goal"}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
             <input
               type="text"
+              autoFocus
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               placeholder="e.g. Emergency fund, Laptop, Kenya trip"
@@ -262,7 +268,9 @@ export default function GoalsManager() {
               </span>
               <input
                 type="number"
+                inputMode="decimal"
                 min={0}
+                step="any"
                 value={form.targetAmount}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, targetAmount: e.target.value }))
@@ -299,6 +307,7 @@ export default function GoalsManager() {
             ).map(([mode, label]) => (
               <button
                 key={mode}
+                type="button"
                 onClick={() =>
                   setForm((f) => ({ ...f, allocationMode: mode }))
                 }
@@ -314,7 +323,9 @@ export default function GoalsManager() {
             {form.allocationMode !== "off" && (
               <input
                 type="number"
+                inputMode="decimal"
                 min={0}
+                step="any"
                 value={form.allocationValue}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, allocationValue: e.target.value }))
@@ -329,6 +340,7 @@ export default function GoalsManager() {
 
           <div className="flex justify-end gap-2 mt-4">
             <button
+              type="button"
               onClick={() => {
                 setFormOpen(false);
                 setEditingId(null);
@@ -339,14 +351,14 @@ export default function GoalsManager() {
               Cancel
             </button>
             <button
-              onClick={handleSubmit}
+              type="submit"
               disabled={!form.name.trim() || !(parseFloat(form.targetAmount) > 0)}
               className="px-5 py-2 rounded-button bg-primary hover:bg-primary-dark disabled:opacity-40 text-white text-xs font-bold transition"
             >
               {editingId ? "Update Goal" : "Create Goal"}
             </button>
           </div>
-        </div>
+        </form>
       )}
 
       {state.goals.length === 0 ? (
@@ -453,10 +465,19 @@ export default function GoalsManager() {
                   </div>
 
                   {remaining > 0 && (
-                    <div className="flex gap-2 mt-3">
+                    <form
+                      noValidate
+                      className="flex gap-2 mt-3"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        contribute(goal);
+                      }}
+                    >
                       <input
                         type="number"
+                        inputMode="decimal"
                         min={0}
+                        step="any"
                         value={contributions[goal.id] ?? ""}
                         onChange={(e) =>
                           setContributions((c) => ({
@@ -468,13 +489,13 @@ export default function GoalsManager() {
                         className="flex-1 min-w-0 px-3 py-2 rounded-input border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-xs outline-none focus:ring-2 focus:ring-primary transition text-gray-800 dark:text-gray-100"
                       />
                       <button
-                        onClick={() => contribute(goal)}
+                        type="submit"
                         disabled={!(parseFloat(contributions[goal.id] ?? "") > 0)}
                         className="px-4 py-2 rounded-button bg-emerald-500 hover:bg-emerald-600 disabled:opacity-40 text-white text-xs font-bold transition"
                       >
                         Contribute
                       </button>
-                    </div>
+                    </form>
                   )}
                 </div>
               );

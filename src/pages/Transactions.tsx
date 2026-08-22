@@ -13,6 +13,7 @@ import { useSearch } from "../hooks/useSearch";
 import { useToast } from "../hooks/useToast";
 import { useUI } from "../hooks/useUI";
 import { exportToCSV } from "../utils/export";
+import { typeTotals } from "../utils/insights";
 import CsvImportModal from "../components/CsvImportModal";
 import MonthNav from "../components/MonthNav";
 import RecurringManager from "../components/RecurringManager";
@@ -103,18 +104,10 @@ export default function Transactions() {
     accountFilter,
   ]);
 
-  const { income, expense, saved } = useMemo(() => {
-    const inc = transactions
-      .filter((t) => t.type === "income")
-      .reduce((s, t) => s + t.amount, 0);
-    const exp = transactions
-      .filter((t) => t.type === "expense")
-      .reduce((s, t) => s + t.amount, 0);
-    const sav = transactions
-      .filter((t) => t.type === "savings")
-      .reduce((s, t) => s + t.amount, 0);
-    return { income: inc, expense: exp, saved: sav };
-  }, [transactions]);
+  const { income, expense, saved } = useMemo(
+    () => typeTotals(transactions),
+    [transactions],
+  );
 
 
   return (

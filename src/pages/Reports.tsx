@@ -5,6 +5,7 @@ import { useBudget, useFormat } from "../hooks/useBudget";
 import { getMonthData } from "../utils/budget";
 import { format } from "date-fns";
 import { printMonthlyReport } from "../utils/printReport";
+import { typeTotals } from "../utils/insights";
 import { useToast } from "../hooks/useToast";
 import MonthNav from "../components/MonthNav";
 import CategoryChart from "../components/CategoryChart";
@@ -26,15 +27,8 @@ export default function Reports() {
   const { transactions, savingsGoal } = getMonthData(state);
 
   const { income, expense, balance, saved, topCategory, topAmount } = useMemo(() => {
-    const inc = transactions
-      .filter((t) => t.type === "income")
-      .reduce((s, t) => s + t.amount, 0);
-    const exp = transactions
-      .filter((t) => t.type === "expense")
-      .reduce((s, t) => s + t.amount, 0);
-    const putAway = transactions
-      .filter((t) => t.type === "savings")
-      .reduce((s, t) => s + t.amount, 0);
+    const { income: inc, expense: exp, saved: putAway } =
+      typeTotals(transactions);
     const bal = inc - exp - putAway;
     const sav = bal > 0 ? bal : 0;
 

@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { PiggyBank, Target, TrendingUp } from "lucide-react";
 import { useBudget, useFormat } from "../hooks/useBudget";
 import { getMonthData, monthKey } from "../utils/budget";
+import { typeTotals } from "../utils/insights";
 import { useToast } from "../hooks/useToast";
 import MonthNav from "../components/MonthNav";
 import Card from "../components/Card";
@@ -15,17 +16,15 @@ export default function Savings() {
   const [goalInput, setGoalInput] = useState(
     savingsGoal > 0 ? String(savingsGoal) : "",
   );
+  const [seededGoal, setSeededGoal] = useState(savingsGoal);
+  if (seededGoal !== savingsGoal) {
+    setSeededGoal(savingsGoal);
+    setGoalInput(savingsGoal > 0 ? String(savingsGoal) : "");
+  }
 
   const { income, expense, putAway, balance, savedBalance, pct, remaining, ringOffset, ringColor } = useMemo(() => {
-    const inc = transactions
-      .filter((t) => t.type === "income")
-      .reduce((s, t) => s + t.amount, 0);
-    const exp = transactions
-      .filter((t) => t.type === "expense")
-      .reduce((s, t) => s + t.amount, 0);
-    const contrib = transactions
-      .filter((t) => t.type === "savings")
-      .reduce((s, t) => s + t.amount, 0);
+    const { income: inc, expense: exp, saved: contrib } =
+      typeTotals(transactions);
     const bal = inc - exp - contrib;
     const sav = bal > 0 ? bal : 0;
     const p =
@@ -152,21 +151,31 @@ export default function Savings() {
                 Set Monthly Goal
               </h2>
             </div>
-            <div className="flex gap-3">
+            <form
+              noValidate
+              className="flex gap-3"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSave();
+              }}
+            >
               <input
                 type="number"
+                inputMode="decimal"
+                min="0"
+                step="any"
                 value={goalInput}
                 onChange={(e) => setGoalInput(e.target.value)}
                 placeholder="Enter amount"
                 className="flex-1 px-4 py-2.5 rounded-input border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-100 outline-none focus:ring-2 focus:ring-primary transition"
               />
               <button
-                onClick={handleSave}
+                type="submit"
                 className="px-5 py-2.5 rounded-button bg-primary hover:bg-primary-dark text-white text-sm font-bold transition"
               >
                 Save
               </button>
-            </div>
+            </form>
             {pct >= 100 && (
               <p className="mt-3 text-sm text-emerald-600 dark:text-emerald-400 font-medium">
                 Congratulations! You've hit your savings goal!

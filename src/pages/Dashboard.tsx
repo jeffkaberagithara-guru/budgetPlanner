@@ -30,6 +30,7 @@ import { useUI } from "../hooks/useUI";
 import { useToast } from "../hooks/useToast";
 import { disableDemo, enableDemo, isDemoActive } from "../utils/demo";
 import { netWorth } from "../utils/accounts";
+import { typeTotals } from "../utils/insights";
 import { format } from "date-fns";
 
 export default function Dashboard() {
@@ -41,15 +42,7 @@ export default function Dashboard() {
   const { transactions, savingsGoal } = getMonthData(state);
 
   const { income, expense, balance, goalPct, spendingPct } = useMemo(() => {
-    const inc = transactions
-      .filter((t) => t.type === "income")
-      .reduce((s, t) => s + t.amount, 0);
-    const exp = transactions
-      .filter((t) => t.type === "expense")
-      .reduce((s, t) => s + t.amount, 0);
-    const putAway = transactions
-      .filter((t) => t.type === "savings")
-      .reduce((s, t) => s + t.amount, 0);
+    const { income: inc, expense: exp, saved: putAway } = typeTotals(transactions);
     const bal = inc - exp - putAway;
     const sav = bal > 0 ? bal : 0;
     const gPct =
@@ -88,14 +81,15 @@ export default function Dashboard() {
     };
   }, [state.data, state.currentYear, state.currentMonth, income, expense]);
 
+  const alertsOn = state.settings.spendingAlerts ?? true;
   const insight =
-    spendingPct > 90
+    alertsOn && spendingPct > 90
       ? {
           msg: "You've used over 90% of your income — review your expenses!",
           color:
             "bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400",
         }
-      : spendingPct > 70
+      : alertsOn && spendingPct > 70
         ? {
             msg: `You're at ${spendingPct}% spending. Keep an eye on it.`,
             color:
@@ -160,7 +154,7 @@ export default function Dashboard() {
           value={fmt(balance)}
           icon={Wallet}
           color={balance >= 0 ? "blue" : "red"}
-          sub="Income minus expenses"
+          sub="After expenses & savings"
         />
         <MetricCard
           label="Savings Goal"
