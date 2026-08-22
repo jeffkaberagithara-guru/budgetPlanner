@@ -1,6 +1,7 @@
 import { Banknote, CreditCard, Landmark, Smartphone, Wallet } from "lucide-react";
 import { ElementType } from "react";
 import { Account, AccountType, BudgetState } from "../types";
+import { isoDate } from "./date";
 
 export const DEFAULT_ACCOUNT_ID = "acct-default";
 
@@ -9,7 +10,7 @@ export const DEFAULT_ACCOUNT: Account = {
   name: "Default",
   type: "other",
   openingBalance: 0,
-  createdAt: new Date().toISOString().slice(0, 10),
+  createdAt: isoDate(new Date()),
 };
 
 export const ACCOUNT_TYPE_META: Record<

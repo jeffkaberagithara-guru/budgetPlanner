@@ -10,6 +10,7 @@ import {
   accountBalance,
 } from "../utils/accounts";
 import type { Account, AccountType } from "../types";
+import { isoDate } from "../utils/date";
 
 interface FormState {
   name: string;
@@ -65,7 +66,7 @@ export default function AccountManager() {
         name,
         type: form.type,
         openingBalance: Math.max(0, Number(form.opening) || 0),
-        createdAt: new Date().toISOString().slice(0, 10),
+        createdAt: isoDate(new Date()),
         lowBalanceThreshold:
           Number.isFinite(threshold) && threshold > 0 ? threshold : undefined,
       },
@@ -113,7 +114,14 @@ export default function AccountManager() {
     onSave: () => void,
   ) {
     return (
-      <div className="p-3 rounded-card border border-teal-200 dark:border-teal-800/60 space-y-3">
+      <form
+        noValidate
+        className="p-3 rounded-card border border-teal-200 dark:border-teal-800/60 space-y-3"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (values.name.trim()) onSave();
+        }}
+      >
         <input
           type="text"
           value={values.name}
@@ -129,6 +137,7 @@ export default function AccountManager() {
             return (
               <button
                 key={t}
+                type="button"
                 onClick={() => setValues({ ...values, type: t })}
                 className={`flex flex-col items-center gap-1 py-2 px-1 rounded-button text-[10px] font-bold transition-all border ${
                   values.type === t
@@ -175,20 +184,21 @@ export default function AccountManager() {
         </label>
         <div className="flex gap-2">
           <button
-            onClick={onSave}
+            type="submit"
             disabled={!values.name.trim()}
             className="flex-1 py-2 rounded-button bg-primary hover:bg-primary-dark text-white text-xs font-bold transition disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-1.5"
           >
             <Check size={13} /> Save Account
           </button>
           <button
+            type="button"
             onClick={cancelAll}
             className="px-4 py-2 rounded-button border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
           >
             Cancel
           </button>
         </div>
-      </div>
+      </form>
     );
   }
 
