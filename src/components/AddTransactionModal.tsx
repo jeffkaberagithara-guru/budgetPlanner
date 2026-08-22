@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { X, AlertTriangle, Repeat, ArrowRight } from "lucide-react";
 import { useBudget } from "../hooks/useBudget";
 import { useToast } from "../hooks/useToast";
@@ -209,8 +209,13 @@ function TransactionForm({
   }
 
   return (
-    <div
-      className="bg-white dark:bg-surface-dark rounded-2xl sm:rounded-2xl rounded-t-3xl shadow-modal w-full max-w-md p-6"
+    <form
+      noValidate
+      className="bg-white dark:bg-surface-dark rounded-t-3xl sm:rounded-2xl shadow-modal w-full max-w-md p-6 max-h-[92vh] overflow-y-auto"
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSave();
+      }}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Handle bar — mobile */}
@@ -222,6 +227,7 @@ function TransactionForm({
           {editing ? "Edit Transaction" : "Add Transaction"}
         </h2>
         <button
+          type="button"
           onClick={onClose}
           aria-label="Close"
           className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition"
@@ -242,6 +248,7 @@ function TransactionForm({
         ).map(([t, label, activeBg]) => (
           <button
             key={t}
+            type="button"
             onClick={() => handleTypeChange(t)}
             className={`flex-1 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all ${
               type === t
@@ -261,6 +268,7 @@ function TransactionForm({
         </label>
         <input
           type="text"
+          autoFocus
           value={name}
           onChange={(e) => handleNameChange(e.target.value)}
           placeholder="e.g. Salary, Rent, Groceries..."
@@ -275,10 +283,12 @@ function TransactionForm({
         </label>
         <input
           type="number"
+          inputMode="decimal"
+          min={0}
+          step="any"
           value={amount}
           onChange={(e) => handleAmountChange(e.target.value)}
           placeholder="0"
-          min={0}
           className="w-full px-4 py-3 rounded-input border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-100 outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
         />
       </div>
@@ -449,6 +459,7 @@ function TransactionForm({
             {cats.map((c) => (
               <button
                 key={c}
+                type="button"
                 onClick={() => setCategory(c)}
                 className={`py-2 px-3 rounded-input text-xs font-semibold text-left transition-all border ${
                   category === c
@@ -527,13 +538,14 @@ function TransactionForm({
       {/* Actions */}
       <div className="flex gap-3">
         <button
+          type="button"
           onClick={onClose}
           className="flex-1 py-3 rounded-button border border-gray-200 dark:border-gray-700 text-sm font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
         >
           Cancel
         </button>
         <button
-          onClick={handleSave}
+          type="submit"
           disabled={
             !name.trim() || !parsedAmount || parsedAmount <= 0 || transferInvalid
           }
@@ -556,7 +568,7 @@ function TransactionForm({
                 : "Save Transaction"}
         </button>
       </div>
-    </div>
+    </form>
   );
 }
 
@@ -567,6 +579,20 @@ export default function AddTransactionModal({
   onClose,
 }: Props) {
   const { state } = useBudget();
+
+  useEffect(() => {
+    if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open, onClose]);
 
   if (!open) return null;
 
