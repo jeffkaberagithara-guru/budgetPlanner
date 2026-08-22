@@ -27,7 +27,7 @@ export default function CashFlowForecast() {
       pendingCount: upcoming.count,
       projected: posted.balance + upcoming.income - upcoming.expenses,
       hasActivity:
-        (state.data[key]?.transactions.length ?? 0) > 0 || upcoming.count > 0,
+        (state.data[key]?.transactions?.length ?? 0) > 0 || upcoming.count > 0,
     };
   }, [state, key, isCurrentRealMonth]);
 
@@ -118,7 +118,7 @@ function Row({
   tone?: "positive" | "negative";
 }) {
   return (
-    <div className="flex items-center justify-between border-b border-gray-50 dark:border-gray-800/60 pb-2 last:border-0">
+    <div className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800/60 last:border-0">
       <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
       <span
         className={`font-black tabular-nums ${
