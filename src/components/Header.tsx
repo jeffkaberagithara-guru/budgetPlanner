@@ -1,7 +1,6 @@
 import { Search, Bell, Landmark, X } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import ClearDataButton from "./ClearDataButton";
 import ThemeToggle from "./ThemeToggle";
 import NotificationsPanel from "./NotificationsPanel";
 import { useSearch } from "../hooks/useSearch";
@@ -79,9 +78,6 @@ export default function Header() {
         {/* Right */}
         <div className="flex items-center gap-2 md:gap-3">
           <ThemeToggle />
-          <div className="hidden md:block">
-            <ClearDataButton />
-          </div>
           <button
             onClick={() => setNotifOpen((v) => !v)}
             aria-label="Notifications"
