@@ -1,7 +1,11 @@
-import { Transaction } from "../types";
+import { Transaction, CurrencyCode } from "../types";
 
-export function exportToCSV(transactions: Transaction[], month: string) {
-  const headers = ["Date", "Description", "Category", "Type", "Amount (KES)"];
+export function exportToCSV(
+  transactions: Transaction[],
+  month: string,
+  currency: CurrencyCode = "KES",
+) {
+  const headers = ["Date", "Description", "Category", "Type", `Amount (${currency})`];
   const rows = transactions.map((t) => [
     t.date,
     t.name,

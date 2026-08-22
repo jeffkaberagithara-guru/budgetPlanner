@@ -1,42 +1,29 @@
+import { useReducer, ReactNode, useEffect } from "react";
+import { BudgetState, BudgetAction } from "../types";
+import BudgetContext from "./budget-context";
 import {
-  createContext,
-  useContext,
-  useReducer,
-  ReactNode,
-  useEffect,
-} from "react";
-import {
-  BudgetState,
-  BudgetAction,
-  MonthData,
-  BudgetLimit,
-  Category,
-} from "../types";
+  STORAGE_KEY,
+  initialState,
+  migrate,
+  getEmptyMonth,
+} from "./budget-schema";
+import { monthKey } from "../utils/budget";
+import { DEFAULT_ACCOUNT_ID } from "../utils/accounts";
+import { DEMO_DATA_KEY, isDemoActive } from "../utils/demo";
 
-const now = new Date();
-
-const initialState: BudgetState = {
-  data: {},
-  currentYear: now.getFullYear(),
-  currentMonth: now.getMonth(),
-  recurringTemplates: [],
-};
-
-const STORAGE_KEY = "budgetbold-data";
+function activeStorageKey() {
+  return isDemoActive() ? DEMO_DATA_KEY : STORAGE_KEY;
+}
 
 function loadState(): BudgetState {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(activeStorageKey());
     if (!raw) return initialState;
     const parsed = JSON.parse(raw);
-    return { ...initialState, ...parsed };
+    return migrate(parsed);
   } catch {
     return initialState;
   }
-}
-
-function getEmptyMonth(): MonthData {
-  return { transactions: [], savingsGoal: 0, budgetLimits: [] };
 }
 
 function budgetReducer(state: BudgetState, action: BudgetAction): BudgetState {
@@ -69,11 +56,114 @@ function budgetReducer(state: BudgetState, action: BudgetAction): BudgetState {
         },
       };
     }
-    case "CHANGE_MONTH":
+    case "UPDATE_TRANSACTION": {
+      const { oldKey, transaction } = action.payload;
+      const newKey = transaction.date.slice(0, 7);
+      const from = state.data[oldKey] ?? getEmptyMonth();
+      const kept = from.transactions.filter((t) => t.id !== transaction.id);
+      if (newKey === oldKey) {
+        return {
+          ...state,
+          data: {
+            ...state.data,
+            [oldKey]: { ...from, transactions: [...kept, transaction] },
+          },
+        };
+      }
+      const to = state.data[newKey] ?? getEmptyMonth();
       return {
         ...state,
-        currentYear: action.payload.year,
-        currentMonth: action.payload.month,
+        data: {
+          ...state.data,
+          [oldKey]: { ...from, transactions: kept },
+          [newKey]: { ...to, transactions: [...to.transactions, transaction] },
+        },
+      };
+    }
+    case "CHANGE_MONTH": {
+      const fromKey = monthKey(state.currentYear, state.currentMonth);
+      const toKey = monthKey(action.payload.year, action.payload.month);
+      if (fromKey === toKey) {
+        return {
+          ...state,
+          currentYear: action.payload.year,
+          currentMonth: action.payload.month,
+        };
+      }
+      const from = state.data[fromKey];
+      const to = state.data[toKey];
+      let nextState: BudgetState;
+      if (
+        from &&
+        from.budgetLimits.length > 0 &&
+        (!to || to.budgetLimits.length === 0)
+      ) {
+        nextState = {
+          ...state,
+          currentYear: action.payload.year,
+          currentMonth: action.payload.month,
+          data: {
+            ...state.data,
+            [toKey]: { ...getEmptyMonth(), ...to, budgetLimits: from.budgetLimits },
+          },
+        };
+      } else {
+        nextState = {
+          ...state,
+          currentYear: action.payload.year,
+          currentMonth: action.payload.month,
+        };
+      }
+
+      if (nextState.settings.autoApplyRecurring) {
+        const existing = nextState.data[toKey] ?? getEmptyMonth();
+        const alreadyApplied = new Set(
+          existing.transactions.map((t) => t.name + t.amount + t.type),
+        );
+        const toAdd = nextState.recurringTemplates
+          .filter(
+            (t) =>
+              t.frequency === "monthly" &&
+              !alreadyApplied.has(t.name + t.amount + t.type),
+          )
+          .map((t) => ({
+            ...t,
+            id: crypto.randomUUID(),
+            date: `${toKey}-01`,
+          }));
+        if (toAdd.length > 0) {
+          nextState = {
+            ...nextState,
+            data: {
+              ...nextState.data,
+              [toKey]: {
+                ...existing,
+                transactions: [...existing.transactions, ...toAdd],
+              },
+            },
+          };
+        }
+      }
+
+      return nextState;
+    }
+    case "SET_CURRENCY":
+      return { ...state, currency: action.payload };
+    case "SET_SETTINGS":
+      return { ...state, settings: { ...state.settings, ...action.payload } };
+    case "ADD_GOAL":
+      return { ...state, goals: [...state.goals, action.payload] };
+    case "UPDATE_GOAL":
+      return {
+        ...state,
+        goals: state.goals.map((g) =>
+          g.id === action.payload.id ? { ...g, ...action.payload.patch } : g,
+        ),
+      };
+    case "DELETE_GOAL":
+      return {
+        ...state,
+        goals: state.goals.filter((g) => g.id !== action.payload),
       };
     case "SET_SAVINGS_GOAL": {
       const { key, goal } = action.payload;
@@ -118,6 +208,41 @@ function budgetReducer(state: BudgetState, action: BudgetAction): BudgetState {
         ...state,
         recurringTemplates: [...state.recurringTemplates, action.payload],
       };
+    case "UPDATE_RECURRING":
+      return {
+        ...state,
+        recurringTemplates: state.recurringTemplates.map((t) =>
+          t.id === action.payload.id ? { ...t, ...action.payload.patch } : t,
+        ),
+      };
+    case "ADD_ACCOUNT":
+      return { ...state, accounts: [...state.accounts, action.payload] };
+    case "UPDATE_ACCOUNT":
+      return {
+        ...state,
+        accounts: state.accounts.map((a) =>
+          a.id === action.payload.id ? { ...a, ...action.payload.patch } : a,
+        ),
+      };
+    case "DELETE_ACCOUNT": {
+      const removedId = action.payload;
+      const data: BudgetState["data"] = {};
+      for (const [key, month] of Object.entries(state.data)) {
+        data[key] = {
+          ...month,
+          transactions: month.transactions.map((t) =>
+            t.accountId === removedId
+              ? { ...t, accountId: DEFAULT_ACCOUNT_ID }
+              : t,
+          ),
+        };
+      }
+      return {
+        ...state,
+        accounts: state.accounts.filter((a) => a.id !== removedId),
+        data,
+      };
+    }
     case "REMOVE_RECURRING":
       return {
         ...state,
@@ -146,36 +271,25 @@ function budgetReducer(state: BudgetState, action: BudgetAction): BudgetState {
         },
       };
     }
+    case "RESTORE_STATE":
+      return action.payload;
     default:
       return state;
   }
 }
 
-export function monthKey(year: number, month: number) {
-  return `${year}-${String(month + 1).padStart(2, "0")}`;
-}
-
-export function getMonthData(state: BudgetState): MonthData {
-  const key = monthKey(state.currentYear, state.currentMonth);
-  return state.data[key] ?? getEmptyMonth();
-}
-
-interface BudgetContextType {
-  state: BudgetState;
-  dispatch: React.Dispatch<BudgetAction>;
-}
-
-const BudgetContext = createContext<BudgetContextType | null>(null);
-
 export function BudgetProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(budgetReducer, undefined, loadState);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch {
-      console.warn("Failed to save to localStorage");
-    }
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem(activeStorageKey(), JSON.stringify(state));
+      } catch {
+        console.warn("Failed to save to localStorage");
+      }
+    }, 300);
+    return () => clearTimeout(timer);
   }, [state]);
 
   return (
@@ -183,10 +297,4 @@ export function BudgetProvider({ children }: { children: ReactNode }) {
       {children}
     </BudgetContext.Provider>
   );
-}
-
-export function useBudget() {
-  const ctx = useContext(BudgetContext);
-  if (!ctx) throw new Error("useBudget must be used within BudgetProvider");
-  return ctx;
 }
