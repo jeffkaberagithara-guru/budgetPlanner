@@ -84,6 +84,9 @@ export default function BudgetLimits() {
           </select>
           <input
             type="number"
+            inputMode="decimal"
+            min={0}
+            step="any"
             value={limitAmount}
             onChange={(e) => setLimitAmount(e.target.value)}
             placeholder="Limit amount"
