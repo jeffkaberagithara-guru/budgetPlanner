@@ -137,3 +137,19 @@ export function categoryAverageBefore(
   if (values.every((v) => v === 0)) return null;
   return values.reduce((s, v) => s + v, 0) / values.length;
 }
+
+export interface SpendingAlertInfo {
+  pct: number;
+  level: "high" | "warn";
+}
+
+export function spendingAlert(
+  income: number,
+  expense: number,
+): SpendingAlertInfo | null {
+  if (income <= 0) return null;
+  const pct = Math.round((expense / income) * 100);
+  if (pct > 90) return { pct, level: "high" };
+  if (pct > 70) return { pct, level: "warn" };
+  return null;
+}

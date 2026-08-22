@@ -30,7 +30,7 @@ import { useUI } from "../hooks/useUI";
 import { useToast } from "../hooks/useToast";
 import { disableDemo, enableDemo, isDemoActive } from "../utils/demo";
 import { netWorth } from "../utils/accounts";
-import { typeTotals } from "../utils/insights";
+import { typeTotals, spendingAlert } from "../utils/insights";
 import { format } from "date-fns";
 
 export default function Dashboard() {
@@ -41,7 +41,7 @@ export default function Dashboard() {
   const demoActive = isDemoActive();
   const { transactions, savingsGoal } = getMonthData(state);
 
-  const { income, expense, balance, goalPct, spendingPct } = useMemo(() => {
+  const { income, expense, balance, goalPct } = useMemo(() => {
     const { income: inc, expense: exp, saved: putAway } = typeTotals(transactions);
     const bal = inc - exp - putAway;
     const sav = bal > 0 ? bal : 0;
@@ -49,9 +49,7 @@ export default function Dashboard() {
       savingsGoal > 0
         ? Math.min(100, Math.round((sav / savingsGoal) * 100))
         : 0;
-    const sPct =
-      inc > 0 ? Math.min(100, Math.round((exp / inc) * 100)) : 0;
-    return { income: inc, expense: exp, balance: bal, goalPct: gPct, spendingPct: sPct };
+    return { income: inc, expense: exp, balance: bal, goalPct: gPct };
   }, [transactions, savingsGoal]);
 
   function toggleDemo() {
@@ -82,16 +80,17 @@ export default function Dashboard() {
   }, [state.data, state.currentYear, state.currentMonth, income, expense]);
 
   const alertsOn = state.settings.spendingAlerts ?? true;
+  const spendAlert = alertsOn ? spendingAlert(income, expense) : null;
   const insight =
-    alertsOn && spendingPct > 90
+    spendAlert?.level === "high"
       ? {
           msg: "You've used over 90% of your income — review your expenses!",
           color:
             "bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400",
         }
-      : alertsOn && spendingPct > 70
+      : spendAlert?.level === "warn"
         ? {
-            msg: `You're at ${spendingPct}% spending. Keep an eye on it.`,
+            msg: `You're at ${spendAlert.pct}% spending. Keep an eye on it.`,
             color:
               "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400",
           }

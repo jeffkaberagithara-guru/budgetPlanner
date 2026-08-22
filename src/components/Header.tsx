@@ -7,27 +7,26 @@ import NotificationsPanel from "./NotificationsPanel";
 import { useSearch } from "../hooks/useSearch";
 import { useBudget } from "../hooks/useBudget";
 import { getMonthData } from "../utils/budget";
+import { lowBalanceAccounts } from "../utils/accounts";
+import { spendingAlert, typeTotals } from "../utils/insights";
+import { loadProfile } from "../utils/profile";
 
 export default function Header() {
   const { query, setQuery } = useSearch();
   const navigate = useNavigate();
   const [notifOpen, setNotifOpen] = useState(false);
+  const [profile] = useState(() => loadProfile());
   const { state } = useBudget();
-  const { transactions, savingsGoal } = getMonthData(state);
+  const { transactions } = getMonthData(state);
 
-  const { hasAlert } = useMemo(() => {
-    const inc = transactions
-      .filter((t) => t.type === "income")
-      .reduce((s, t) => s + t.amount, 0);
-    const exp = transactions
-      .filter((t) => t.type === "expense")
-      .reduce((s, t) => s + t.amount, 0);
-    const pct = inc > 0 ? Math.round((exp / inc) * 100) : 0;
-    return {
-      spendingPct: pct,
-      hasAlert: pct > 70 || transactions.length === 0 || savingsGoal > 0,
-    };
-  }, [transactions, savingsGoal]);
+  const hasAlert = useMemo(() => {
+    if (lowBalanceAccounts(state).length > 0) return true;
+    if (!(state.settings.spendingAlerts ?? true)) return false;
+    const { income, expense } = typeTotals(transactions);
+    return spendingAlert(income, expense) !== null;
+  }, [state, transactions]);
+
+  const avatarInitial = (profile.name.trim()[0] ?? "B").toUpperCase();
 
   function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
     setQuery(e.target.value);
@@ -96,12 +95,13 @@ export default function Header() {
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full" />
             )}
           </button>
-          <div
+          <button
             onClick={() => navigate("/settings")}
-            className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-primary flex items-center justify-center text-white text-xs md:text-sm font-bold cursor-pointer hover:bg-primary-dark transition"
+            aria-label="Open settings"
+            className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-primary flex items-center justify-center text-white text-xs md:text-sm font-bold hover:bg-primary-dark transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
           >
-            B
-          </div>
+            {avatarInitial}
+          </button>
         </div>
       </header>
 

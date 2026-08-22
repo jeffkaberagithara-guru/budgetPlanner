@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useBudget, useFormat } from "../hooks/useBudget";
 import { getEffectiveLimit, getMonthData, monthKey } from "../utils/budget";
-import { categoryAverageBefore } from "../utils/insights";
+import { categoryAverageBefore, spendingAlert, typeTotals } from "../utils/insights";
 import { lowBalanceAccounts } from "../utils/accounts";
 import { Category } from "../types";
 import EmptyState from "./EmptyState";
@@ -25,22 +25,16 @@ export default function NotificationsPanel({ open, onClose }: Props) {
   const { state } = useBudget();
   const fmt = useFormat();
   const { transactions, savingsGoal, budgetLimits } = getMonthData(state);
+  const alertsOn = state.settings.spendingAlerts ?? true;
 
   const notifications = useMemo(() => {
-    const inc = transactions
-      .filter((t) => t.type === "income")
-      .reduce((s, t) => s + t.amount, 0);
-    const exp = transactions
-      .filter((t) => t.type === "expense")
-      .reduce((s, t) => s + t.amount, 0);
-    const putAway = transactions
-      .filter((t) => t.type === "savings")
-      .reduce((s, t) => s + t.amount, 0);
+    const { income: inc, expense: exp, saved: putAway } =
+      typeTotals(transactions);
     const bal = inc - exp - putAway;
     const sav = bal > 0 ? bal : 0;
-    const sPct = inc > 0 ? Math.round((exp / inc) * 100) : 0;
     const gPct =
       savingsGoal > 0 ? Math.round((sav / savingsGoal) * 100) : 0;
+    const alert = alertsOn ? spendingAlert(inc, exp) : null;
 
     const spending: Record<string, number> = {};
     transactions
@@ -65,19 +59,20 @@ export default function NotificationsPanel({ open, onClose }: Props) {
       .slice(0, 2);
 
     return [
-    sPct > 90 && {
-      icon: TrendingDown,
-      color: "text-rose-500 bg-rose-50 dark:bg-rose-900/20",
-      title: "High Spending Alert",
-      msg: `You've used ${sPct}% of your income this month.`,
-      time: "Just now",
-    },
-    sPct > 70 &&
-      sPct <= 90 && {
+    alert &&
+      alert.level === "high" && {
+        icon: TrendingDown,
+        color: "text-rose-500 bg-rose-50 dark:bg-rose-900/20",
+        title: "High Spending Alert",
+        msg: `You've used ${alert.pct}% of your income this month.`,
+        time: "Just now",
+      },
+    alert &&
+      alert.level === "warn" && {
         icon: TrendingDown,
         color: "text-amber-500 bg-amber-50 dark:bg-amber-900/20",
         title: "Spending Warning",
-        msg: `You're at ${sPct}% of income spent. Slow down!`,
+        msg: `You're at ${alert.pct}% of income spent. Slow down!`,
         time: "Just now",
       },
     gPct >= 100 && {
@@ -155,7 +150,7 @@ export default function NotificationsPanel({ open, onClose }: Props) {
     msg: string;
     time: string;
   }>;
-  }, [state, transactions, savingsGoal, budgetLimits, fmt]);
+  }, [state, transactions, savingsGoal, budgetLimits, fmt, alertsOn]);
 
   if (!open) return null;
 
