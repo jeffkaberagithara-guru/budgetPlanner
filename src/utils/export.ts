@@ -4,14 +4,27 @@ export function exportToCSV(
   transactions: Transaction[],
   month: string,
   currency: CurrencyCode = "KES",
+  accountLabel?: (t: Transaction) => string,
 ) {
-  const headers = ["Date", "Description", "Category", "Type", `Amount (${currency})`];
+  const headers = [
+    "Date",
+    "Description",
+    "Category",
+    "Type",
+    `Amount (${currency})`,
+    "Method",
+    "Account",
+    "Note",
+  ];
   const rows = transactions.map((t) => [
     t.date,
     t.name,
     t.category,
     t.type,
     t.amount.toString(),
+    t.method ?? "",
+    accountLabel ? accountLabel(t) : "",
+    t.note ?? "",
   ]);
 
   const csv = [headers, ...rows]

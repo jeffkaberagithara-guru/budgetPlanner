@@ -23,6 +23,9 @@ import { exportToCSV } from "../utils/export";
 import { useBudget } from "../hooks/useBudget";
 import { useToast } from "../hooks/useToast";
 import { CURRENCIES, CurrencyCode, formatMoney } from "../utils/currency";
+import { loadProfile, saveProfile } from "../utils/profile";
+import { accountName } from "../utils/accounts";
+import { Profile } from "../types";
 import {
   DEMO_EVENT,
   disableDemo,
@@ -34,11 +37,7 @@ export default function Settings() {
   const { theme } = useTheme();
   const { state, dispatch } = useBudget();
   const { push } = useToast();
-  const [name, setName] = useState("Budget User");
-  const [email, setEmail] = useState("user@budgetbold.com");
-  const [notifications, setNotifications] = useState(true);
-  const [weeklyReport, setWeeklyReport] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [profile, setProfile] = useState<Profile>(() => loadProfile());
   const [demoActive, setDemoActive] = useState(() => isDemoActive());
   const currency = state.currency;
 
@@ -54,9 +53,12 @@ export default function Settings() {
     (m) => m.transactions,
   );
 
-  function handleSave() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  function updateProfile(patch: Partial<Profile>) {
+    setProfile((prev) => {
+      const next = { ...prev, ...patch };
+      saveProfile(next);
+      return next;
+    });
   }
 
   function handleCurrencyChange(c: CurrencyCode) {
@@ -74,7 +76,7 @@ export default function Settings() {
   }
 
   function toggleSetting(
-    key: "rollover" | "autoApplyRecurring",
+    key: "rollover" | "autoApplyRecurring" | "spendingAlerts",
     label: string,
     value: boolean,
   ) {
@@ -82,7 +84,7 @@ export default function Settings() {
     push({ message: `${label} ${!value ? "enabled" : "disabled"}`, tone: "success" });
   }
 
-  const { rollover, autoApplyRecurring } = state.settings;
+  const { rollover, autoApplyRecurring, spendingAlerts = true } = state.settings;
 
   return (
     <div className="max-w-2xl mx-auto w-full">
@@ -106,13 +108,15 @@ export default function Settings() {
         </div>
         <div className="flex items-center gap-4 mb-5">
           <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-white text-2xl font-black shrink-0">
-            {name.charAt(0).toUpperCase()}
+            {(profile.name.trim()[0] ?? "B").toUpperCase()}
           </div>
           <div>
             <p className="text-sm font-bold text-gray-900 dark:text-white">
-              {name}
+              {profile.name.trim() || "Budget User"}
             </p>
-            <p className="text-xs text-gray-400 dark:text-gray-500">{email}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">
+              {profile.email.trim() || "Local profile — stored on this device only"}
+            </p>
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -122,8 +126,9 @@ export default function Settings() {
             </label>
             <input
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={profile.name}
+              onChange={(e) => updateProfile({ name: e.target.value })}
+              placeholder="Your name"
               className="w-full px-4 py-2.5 rounded-input border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-100 outline-none focus:ring-2 focus:ring-primary transition"
             />
           </div>
@@ -133,12 +138,16 @@ export default function Settings() {
             </label>
             <input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={profile.email}
+              onChange={(e) => updateProfile({ email: e.target.value })}
+              placeholder="you@example.com"
               className="w-full px-4 py-2.5 rounded-input border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-100 outline-none focus:ring-2 focus:ring-primary transition"
             />
           </div>
         </div>
+        <p className="text-xs text-gray-300 dark:text-gray-600 mt-4">
+          Changes save automatically as you type — nothing is uploaded anywhere.
+        </p>
       </Card>
 
       <AccountManager />
@@ -255,42 +264,25 @@ export default function Settings() {
             Notifications
           </h2>
         </div>
-        {[
-          {
-            label: "Spending alerts",
-            sub: "Get notified when spending exceeds 80%",
-            value: notifications,
-            set: setNotifications,
-          },
-          {
-            label: "Weekly report",
-            sub: "Receive a summary every Monday",
-            value: weeklyReport,
-            set: setWeeklyReport,
-          },
-        ].map(({ label, sub, value, set }) => (
-          <div
-            key={label}
-            className="flex items-center justify-between py-3 border-b border-gray-50 dark:border-gray-800/60 last:border-0"
-          >
-            <div>
-              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-                {label}
-              </p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                {sub}
-              </p>
-            </div>
-            <button
-              onClick={() => set(!value)}
-              className={`relative w-11 h-6 rounded-full transition-colors duration-300 ${value ? "bg-primary" : "bg-gray-200 dark:bg-gray-700"}`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-300 ${value ? "translate-x-5" : "translate-x-0"}`}
-              />
-            </button>
+        <div className="flex items-center justify-between py-3">
+          <div>
+            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+              Spending alerts
+            </p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+              Warn you when spending passes 70% and 90% of income
+            </p>
           </div>
-        ))}
+          <button
+            onClick={() => toggleSetting("spendingAlerts", "Spending alerts", spendingAlerts)}
+            aria-label="Toggle spending alerts"
+            className={`relative w-11 h-6 rounded-full transition-colors duration-300 shrink-0 ${spendingAlerts ? "bg-primary" : "bg-gray-200 dark:bg-gray-700"}`}
+          >
+            <span
+              className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-300 ${spendingAlerts ? "translate-x-5" : "translate-x-0"}`}
+            />
+          </button>
+        </div>
       </Card>
 
       <PinLockSettings />
@@ -354,7 +346,12 @@ export default function Settings() {
           </Link>
           <button
             onClick={() => {
-              exportToCSV(allTransactions, "all-time", currency);
+              exportToCSV(
+                allTransactions,
+                "all-time",
+                currency,
+                (t) => accountName(state, t.accountId),
+              );
               push({
                 message: `Exported ${allTransactions.length} transaction${allTransactions.length !== 1 ? "s" : ""}`,
                 tone: "success",
@@ -397,23 +394,6 @@ export default function Settings() {
           </div>
         </div>
       </Card>
-
-      <button
-        onClick={handleSave}
-        className={`w-full py-3.5 rounded-2xl text-sm font-black transition-all flex items-center justify-center gap-2 ${
-          saved
-            ? "bg-emerald-500 text-white"
-            : "bg-primary hover:bg-primary-dark text-white shadow-lg shadow-primary/20"
-        }`}
-      >
-        {saved ? (
-          <>
-            <Check size={16} /> Saved!
-          </>
-        ) : (
-          "Save Changes"
-        )}
-      </button>
     </div>
   );
 }

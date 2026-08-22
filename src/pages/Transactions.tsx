@@ -391,7 +391,9 @@ export default function Transactions() {
           </button>
           <button
             onClick={() => {
-              exportToCSV(transactions, key, state.currency);
+              exportToCSV(transactions, key, state.currency, (t) =>
+                accountName(state, t.accountId),
+              );
               push({
                 message: `Exported ${transactions.length} transaction${transactions.length !== 1 ? "s" : ""}`,
                 tone: "success",
