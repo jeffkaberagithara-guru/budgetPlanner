@@ -17,7 +17,7 @@ const navItems = [
 
 export default function BottomNav() {
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 flex items-center justify-around px-1 py-2 transition-colors">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800/60 flex items-center justify-around px-1 py-2 transition-colors">
       {navItems.map(({ icon: Icon, label, to }) => (
         <NavLink
           key={label}
@@ -26,7 +26,7 @@ export default function BottomNav() {
           className={({ isActive }) =>
             `flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all ${
               isActive
-                ? "text-violet-600 dark:text-violet-400"
+                ? "text-primary dark:text-primary-light"
                 : "text-gray-400 dark:text-gray-500"
             }`
           }
@@ -34,7 +34,7 @@ export default function BottomNav() {
           {({ isActive }) => (
             <>
               <div
-                className={`p-1.5 rounded-xl transition-all ${isActive ? "bg-violet-50 dark:bg-violet-900/30" : ""}`}
+                className={`p-1.5 rounded-xl transition-all ${isActive ? "bg-primary/10 dark:bg-primary/20" : ""}`}
               >
                 <Icon size={18} />
               </div>

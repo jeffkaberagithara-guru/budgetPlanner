@@ -5,22 +5,22 @@ interface Props {
   label: string;
   value: string;
   icon: LucideIcon;
-  color: "green" | "red" | "blue" | "violet";
+  color: "green" | "red" | "blue" | "teal";
   sub?: string;
 }
 
 const colorMap = {
-  green: "bg-emerald-50 text-emerald-600",
-  red: "bg-rose-50 text-rose-600",
-  blue: "bg-blue-50 text-blue-600",
-  violet: "bg-violet-50 text-violet-600",
+  green: "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400",
+  red: "bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400",
+  blue: "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400",
+  teal: "bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400",
 };
 
 const valueColorMap = {
-  green: "text-emerald-600",
-  red: "text-rose-600",
-  blue: "text-blue-600",
-  violet: "text-violet-600",
+  green: "text-emerald-600 dark:text-emerald-400",
+  red: "text-rose-600 dark:text-rose-400",
+  blue: "text-blue-600 dark:text-blue-400",
+  teal: "text-teal-600 dark:text-teal-400",
 };
 
 export default function MetricCard({
@@ -47,21 +47,25 @@ export default function MetricCard({
   return (
     <div
       ref={ref}
-      className={`bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100 flex flex-col md:flex-row items-start md:gap-4 gap-3 transition-all duration-500 ${
+      className={`bg-white dark:bg-surface-dark rounded-card shadow-card border border-gray-100 dark:border-gray-800/60 p-4 md:p-5 flex flex-col md:flex-row items-start md:gap-4 gap-3 transition-all duration-500 ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       }`}
     >
-      <div className={`p-2.5 md:p-3 rounded-xl ${colorMap[color]}`}>
+      <div className={`p-2.5 md:p-3 rounded-icon ${colorMap[color]}`}>
         <Icon size={18} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs text-gray-400 mb-1">{label}</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">{label}</p>
         <p
           className={`text-lg md:text-2xl font-black truncate ${valueColorMap[color]}`}
         >
           {value}
         </p>
-        {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
+        {sub && (
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+            {sub}
+          </p>
+        )}
       </div>
     </div>
   );

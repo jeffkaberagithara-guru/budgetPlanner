@@ -1,27 +1,18 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  ReactNode,
-} from "react";
-
-type Theme = "light" | "dark";
-
-interface ThemeContextType {
-  theme: Theme;
-  toggle: () => void;
-}
-
-const ThemeContext = createContext<ThemeContextType | null>(null);
+import { useEffect, useState, ReactNode } from "react";
+import ThemeContext, { Theme } from "./theme-context";
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     try {
-      return (localStorage.getItem("budgetbold-theme") as Theme) ?? "light";
+      const stored = localStorage.getItem("budgetbold-theme") as Theme | null;
+      if (stored === "light" || stored === "dark") return stored;
     } catch {
       return "light";
     }
+    if (window.matchMedia?.("(prefers-color-scheme: dark)").matches) {
+      return "dark";
+    }
+    return "light";
   });
 
   useEffect(() => {
@@ -43,10 +34,4 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       {children}
     </ThemeContext.Provider>
   );
-}
-
-export function useTheme() {
-  const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error("useTheme must be used within ThemeProvider");
-  return ctx;
 }

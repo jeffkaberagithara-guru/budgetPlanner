@@ -1,6 +1,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
-import { useBudget, monthKey } from "../context/BudgetContext";
+import { useBudget } from "../hooks/useBudget";
+import { monthKey } from "../utils/budget";
 
 export default function MonthNav() {
   const { state, dispatch } = useBudget();
@@ -26,24 +27,24 @@ export default function MonthNav() {
     monthKey(new Date().getFullYear(), new Date().getMonth());
 
   return (
-    <div className="flex items-center gap-1 bg-white border border-gray-100 rounded-xl px-1 py-1 shadow-sm">
+    <div className="flex items-center gap-1 bg-white dark:bg-surface-dark border border-gray-100 dark:border-gray-800/60 rounded-xl px-1 py-1 shadow-card">
       <button
         onClick={() => change(-1)}
         aria-label="Previous month"
-        className="p-1.5 rounded-lg hover:bg-gray-100 transition"
+        className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
       >
-        <ChevronLeft size={16} className="text-gray-500" />
+        <ChevronLeft size={16} className="text-gray-500 dark:text-gray-400" />
       </button>
-      <span className="text-xs md:text-sm font-bold text-gray-700 min-w-24 md:min-w-32 text-center px-1">
+      <span className="text-xs md:text-sm font-bold text-gray-700 dark:text-gray-200 min-w-24 md:min-w-32 text-center px-1">
         {format(date, "MMM yyyy")}
       </span>
       <button
         onClick={() => change(1)}
         disabled={isCurrentMonth}
         aria-label="Next month"
-        className="p-1.5 rounded-lg hover:bg-gray-100 transition disabled:opacity-30 disabled:cursor-not-allowed"
+        className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition disabled:opacity-30 disabled:cursor-not-allowed"
       >
-        <ChevronRight size={16} className="text-gray-500" />
+        <ChevronRight size={16} className="text-gray-500 dark:text-gray-400" />
       </button>
     </div>
   );
