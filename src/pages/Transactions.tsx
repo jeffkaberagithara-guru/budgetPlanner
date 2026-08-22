@@ -65,7 +65,7 @@ function TxRow({ tx, onDelete }: { tx: Transaction; onDelete: () => void }) {
             {tx.note}
           </p>
         )}
-        <div className="flex items-center gap-2 mt-0.5">
+        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
           <span
             className={`text-xs px-2 py-0.5 rounded-full font-medium ${CATEGORY_BADGE[tx.category] ?? ""}`}
           >
@@ -114,7 +114,7 @@ function TxRow({ tx, onDelete }: { tx: Transaction; onDelete: () => void }) {
         <p
           className={`text-sm font-black shrink-0 ${
             tx.type === "income"
-              ? "text-emerald-500 dark:text-emerald-400"
+              ? "text-emerald-600 dark:text-emerald-400"
               : tx.type === "savings"
                 ? "text-primary dark:text-primary-light"
                 : "text-rose-500 dark:text-rose-400"
@@ -289,7 +289,7 @@ export default function Transactions() {
             label: "Balance",
             value: fmt(income - expense - saved),
             color:
-              income - expense >= 0
+              income - expense - saved >= 0
                 ? "text-blue-600 dark:text-blue-400"
                 : "text-rose-500 dark:text-rose-400",
             bg: "bg-blue-50 dark:bg-blue-900/20",
