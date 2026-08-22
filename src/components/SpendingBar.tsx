@@ -31,7 +31,11 @@ export default function SpendingBar({ income, expense }: Props) {
   }, [pct]);
 
   const color =
-    pct > 90 ? "bg-rose-500" : pct > 70 ? "bg-amber-400" : "bg-emerald-500";
+    pct > 90
+      ? "bg-rose-500"
+      : pct > 70
+        ? "bg-amber-400"
+        : "bg-teal-500";
 
   const message =
     pct > 90
@@ -45,21 +49,32 @@ export default function SpendingBar({ income, expense }: Props) {
   return (
     <div
       ref={ref}
-      className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100"
+      className="bg-white dark:bg-surface-dark rounded-card shadow-card border border-gray-100 dark:border-gray-800/60 p-5 transition-colors"
     >
       <div className="flex items-center justify-between mb-3">
-        <p className="text-sm font-semibold text-gray-700">
+        <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
           Spending vs Income
         </p>
-        <span className="text-sm font-bold text-gray-900">{animatedPct}%</span>
+        <span className="text-sm font-bold text-gray-900 dark:text-white">
+          {animatedPct}%
+        </span>
       </div>
-      <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+      <div
+        role="progressbar"
+        aria-label="Spending vs income"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={animatedPct}
+        className="h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"
+      >
         <div
           className={`h-full rounded-full ${color}`}
           style={{ width: `${animatedPct}%`, transition: "width 0.05s linear" }}
         />
       </div>
-      <p className="text-xs text-gray-400 mt-2">{message}</p>
+      <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+        {message}
+      </p>
     </div>
   );
 }

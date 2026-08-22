@@ -4,9 +4,9 @@ import {
   spring,
   interpolate,
   AbsoluteFill,
-  Sequence,
 } from "remotion";
 import AnimatedNumber from "./AnimatedNumber";
+import { CurrencyCode, formatMoney } from "../utils/currency";
 
 interface Props {
   month: string;
@@ -17,6 +17,7 @@ interface Props {
   topAmount: number;
   savingsGoal: number;
   saved: number;
+  currency?: CurrencyCode;
 }
 
 function FadeSlide({
@@ -40,28 +41,6 @@ function FadeSlide({
     <div style={{ opacity, transform: `translateY(${translateY}px)` }}>
       {children}
     </div>
-  );
-}
-
-function ScaleIn({
-  children,
-  delay = 0,
-}: {
-  children: React.ReactNode;
-  delay?: number;
-}) {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const progress = spring({
-    frame: frame - delay,
-    fps,
-    config: { damping: 30, stiffness: 100, mass: 0.8 },
-  });
-  const scale = interpolate(progress, [0, 1], [0.5, 1]);
-  const opacity = interpolate(progress, [0, 1], [0, 1]);
-  if (frame < delay) return null;
-  return (
-    <div style={{ opacity, transform: `scale(${scale})` }}>{children}</div>
   );
 }
 
@@ -173,6 +152,7 @@ export default function MonthlySummaryComposition({
   topAmount,
   savingsGoal,
   saved,
+  currency = "KES",
 }: Props) {
   const spendingPct =
     income > 0 ? Math.min(100, Math.round((expense / income) * 100)) : 0;
@@ -285,7 +265,7 @@ export default function MonthlySummaryComposition({
                 {label}
               </div>
               <div style={{ fontSize: 16, fontWeight: 800, color }}>
-                KES <AnimatedNumber value={value} color={color} />
+                {currency} <AnimatedNumber value={value} color={color} />
               </div>
             </div>
           </FadeSlide>
@@ -376,7 +356,7 @@ export default function MonthlySummaryComposition({
               </div>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#a78bfa" }}>
                 {savingsGoal > 0
-                  ? `KES ${savingsGoal.toLocaleString()}`
+                  ? formatMoney(savingsGoal, currency)
                   : "Not set"}
               </div>
             </div>
@@ -414,7 +394,7 @@ export default function MonthlySummaryComposition({
             </div>
             {topCategory && (
               <div style={{ fontSize: 13, fontWeight: 700, color: "#f43f5e" }}>
-                KES <AnimatedNumber value={topAmount} color="#f43f5e" />
+                {currency} <AnimatedNumber value={topAmount} color="#f43f5e" />
               </div>
             )}
           </div>
