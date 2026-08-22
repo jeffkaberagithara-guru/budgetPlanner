@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FileUp, Check, X, ArrowRight, FileText } from "lucide-react";
 import { useBudget, useFormat } from "../hooks/useBudget";
 import { useToast } from "../hooks/useToast";
@@ -68,6 +68,20 @@ export default function CsvImportModal({
   const [signMeansDirection, setSignMeansDirection] = useState(true);
 
   const headers = hasHeader && rows.length > 0 ? rows[0] : null;
+
+  useEffect(() => {
+    if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open, onClose]);
   const bodyRows = useMemo(
     () => (hasHeader ? rows.slice(1) : rows),
     [rows, hasHeader],
