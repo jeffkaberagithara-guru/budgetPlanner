@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { Minus } from "lucide-react";
-import { format } from "date-fns";
 import { useBudget, useFormat } from "../hooks/useBudget";
 import {
   getMonthData,
@@ -8,6 +7,7 @@ import {
   monthKey,
   previousKey,
 } from "../utils/budget";
+import { monthLabel } from "../utils/date";
 
 interface Row {
   label: string;
@@ -44,14 +44,7 @@ export default function PeriodComparison() {
     ];
   }, [state, prevKey]);
 
-  const prevLabel = format(
-    new Date(
-      Number(prevKey.split("-")[0]),
-      Number(prevKey.split("-")[1]) - 1,
-      1,
-    ),
-    "MMMM",
-  );
+  const prevLabel = monthLabel(prevKey, "MMMM");
 
   return (
     <div>

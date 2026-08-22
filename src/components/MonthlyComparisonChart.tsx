@@ -10,7 +10,9 @@ import {
 import { BarChart3 } from "lucide-react";
 import { useBudget, useFormat } from "../hooks/useBudget";
 import { useTheme } from "../hooks/useTheme";
-import { format } from "date-fns";
+import { getMonthTotals, monthKey } from "../utils/budget";
+import { lastMonthKeys } from "../utils/insights";
+import { monthLabel } from "../utils/date";
 import EmptyState from "./EmptyState";
 import ChartErrorBoundary from "./ChartErrorBoundary";
 
@@ -25,23 +27,11 @@ export default function MonthlyComparisonChart() {
   const isDark = theme === "dark";
   const axisColor = isDark ? "#475569" : "#94a3b8";
 
-  const data = Array.from({ length: 6 }, (_, i) => {
-    let month = state.currentMonth - (5 - i);
-    let year = state.currentYear;
-    if (month < 0) {
-      month += 12;
-      year--;
-    }
-    const key = `${year}-${String(month + 1).padStart(2, "0")}`;
-    const monthData = state.data[key] ?? { transactions: [], savingsGoal: 0 };
-    const income = monthData.transactions
-      .filter((t) => t.type === "income")
-      .reduce((s, t) => s + t.amount, 0);
-    const expense = monthData.transactions
-      .filter((t) => t.type === "expense")
-      .reduce((s, t) => s + t.amount, 0);
+  const currentKey = monthKey(state.currentYear, state.currentMonth);
+  const data = lastMonthKeys(currentKey, 6).map((key) => {
+    const { income, expense } = getMonthTotals(state.data[key]);
     return {
-      name: format(new Date(year, month, 1), "MMM"),
+      name: monthLabel(key),
       Income: income,
       Expenses: expense,
     };

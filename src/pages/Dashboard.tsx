@@ -31,6 +31,7 @@ import { useToast } from "../hooks/useToast";
 import { disableDemo, enableDemo, isDemoActive } from "../utils/demo";
 import { netWorth } from "../utils/accounts";
 import { typeTotals, spendingAlert } from "../utils/insights";
+import { monthLabel } from "../utils/date";
 import { format } from "date-fns";
 
 export default function Dashboard() {
@@ -62,11 +63,14 @@ export default function Dashboard() {
     }
   }
 
-  const prevLabel = useMemo(() => {
-    const key = monthKey(state.currentYear, state.currentMonth);
-    const [py, pm] = previousKey(key).split("-").map(Number);
-    return format(new Date(py, pm - 1, 1), "MMMM");
-  }, [state.currentYear, state.currentMonth]);
+  const prevLabel = useMemo(
+    () =>
+      monthLabel(
+        previousKey(monthKey(state.currentYear, state.currentMonth)),
+        "MMMM",
+      ),
+    [state.currentYear, state.currentMonth],
+  );
 
   const { incomeDelta, expenseDelta } = useMemo(() => {
     const key = monthKey(state.currentYear, state.currentMonth);
