@@ -34,6 +34,12 @@ export interface Account {
 export interface BudgetSettings {
   rollover: boolean;
   autoApplyRecurring: boolean;
+  spendingAlerts?: boolean;
+}
+
+export interface Profile {
+  name: string;
+  email: string;
 }
 
 export type CurrencyCode = "KES" | "USD" | "EUR" | "GBP" | "UGX" | "TZS" | "ZAR";
