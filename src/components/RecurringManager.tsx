@@ -135,7 +135,14 @@ export default function RecurringManager() {
       </div>
 
       {showForm && (
-        <div className="bg-gray-50 dark:bg-gray-800/60 rounded-card p-4 mb-4 space-y-3">
+        <form
+          noValidate
+          className="bg-gray-50 dark:bg-gray-800/60 rounded-card p-4 mb-4 space-y-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSave();
+          }}
+        >
           <div className="flex gap-2 bg-gray-200 dark:bg-gray-700 p-1 rounded-xl">
             {(
               [
@@ -146,6 +153,7 @@ export default function RecurringManager() {
             ).map(([t, activeBg]) => (
               <button
                 key={t}
+                type="button"
                 onClick={() => {
                   setType(t);
                   setCategory(
@@ -173,6 +181,9 @@ export default function RecurringManager() {
 
           <input
             type="number"
+            inputMode="decimal"
+            min={0}
+            step="any"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="Amount"
@@ -215,6 +226,7 @@ export default function RecurringManager() {
 
           <div className="flex gap-2">
             <button
+              type="button"
               onClick={() => {
                 setShowForm(false);
                 resetForm();
@@ -224,7 +236,7 @@ export default function RecurringManager() {
               Cancel
             </button>
             <button
-              onClick={handleSave}
+              type="submit"
               disabled={!name.trim() || !amount || parseFloat(amount) <= 0}
               className="flex-1 py-2 rounded-button bg-primary hover:bg-primary-dark text-white text-sm font-bold transition disabled:opacity-40"
             >
@@ -236,7 +248,7 @@ export default function RecurringManager() {
               Editing a template — future auto-posted months will use these details.
             </p>
           )}
-        </div>
+        </form>
       )}
 
       {state.recurringTemplates.length === 0 ? (
