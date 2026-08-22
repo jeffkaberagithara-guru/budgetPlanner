@@ -151,7 +151,7 @@ polish.
 - ✅ Respect `prefers-reduced-motion`
 - ✅ Visible consistent focus states *(Phase 7 — global `:focus-visible` ring in brand teal via App.css base layer; mouse clicks stay clean)*
 - ✅ Screen-reader summaries for charts *(Phase 7 — sr-only data summaries + `role="img"` labels on all three recharts, `accessibilityLayer` enabled; SpendingBar is a labeled `progressbar`)*
-- 🟡 Full keyboard navigation audit *(focus rings + swipe fallback buttons landed in Phase 7; a systematic tab-order pass across every page is still open)*
+- ✅ Full keyboard navigation audit *(Phase 15 — every form submits on Enter via native `<form>` wrappers, Escape closes both modals regardless of input focus, body scroll locks behind modals, autoFocus on first fields, `inputMode="decimal"` on all money inputs, header avatar is a real focusable button; focus rings + swipe fallback buttons from Phase 7)*
 - ✅ Resizable text without breakage (rem-based scale, truncation guards)
 
 ## Performance & Reliability
