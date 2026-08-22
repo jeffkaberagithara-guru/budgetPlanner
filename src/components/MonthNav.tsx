@@ -46,6 +46,21 @@ export default function MonthNav() {
       >
         <ChevronRight size={16} className="text-gray-500 dark:text-gray-400" />
       </button>
+      {!isCurrentMonth && (
+        <button
+          onClick={() => {
+            const now = new Date();
+            dispatch({
+              type: "CHANGE_MONTH",
+              payload: { year: now.getFullYear(), month: now.getMonth() },
+            });
+          }}
+          aria-label="Jump to current month"
+          className="px-2 py-1 mr-0.5 rounded-lg text-[11px] font-bold text-primary dark:text-primary-light hover:bg-teal-50 dark:hover:bg-teal-900/20 transition"
+        >
+          Today
+        </button>
+      )}
     </div>
   );
 }
