@@ -46,7 +46,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0 lg:ml-56">
         <Header />
         <DemoBanner />
-        <main className="flex-1 p-4 md:p-6 pb-24 lg:pb-6 overflow-x-hidden">
+        <main className="flex-1 p-4 md:p-6 pb-40 sm:pb-36 lg:pb-24 overflow-x-hidden">
           {children}
         </main>
       </div>
